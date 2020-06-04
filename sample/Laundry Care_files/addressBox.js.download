@@ -1,0 +1,143 @@
+var currentAddress = {
+	street_number: '',
+	route: '',
+	locality: '',
+	administrative_area_level_1: '',
+	postal_code: ''	
+}
+
+var componentForm = {
+	street_number: 'short_name',
+	route: 'long_name',
+	locality: 'long_name',
+	administrative_area_level_1: 'short_name',
+	postal_code: 'short_name'
+};
+
+
+function readCookie(name) {
+	var nameEQ = name + "=";
+	var ca = document.cookie.split(';');
+	for (var i = 0; i < ca.length; i++) {
+		var c = ca[i];
+		while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+	}
+	return null;
+}
+
+function saveAddressCookie(_autocomplete) {
+	var place = _autocomplete.getPlace();
+
+	let getAddressPartByType = (type) => {
+		let matchingComponents = place.address_components.filter(component => {
+			return component.types.filter(component_type => component_type == type).length
+		});
+
+		if (matchingComponents.length)
+			return matchingComponents[0];
+		return null;
+	}
+
+	let addressObject = {
+		street_number: getAddressPartByType("street_number").short_name,
+		street: getAddressPartByType("route").short_name,
+		city: getAddressPartByType("locality").short_name,
+		state: getAddressPartByType("administrative_area_level_1").short_name,
+		zipcode: getAddressPartByType("postal_code").short_name,
+		latitude: place.geometry.location.lat(),
+		longitude: place.geometry.location.lng()
+	};
+
+	document.cookie = "address=" + JSON.stringify(addressObject) + "; path=/; secure";
+}
+
+function initAutocomplete() {
+	var nodes = document.querySelectorAll(".address-box input");
+
+	for (var i = 0; i < nodes.length; i++) {
+		var autoComplete = new google.maps.places.Autocomplete(
+			nodes[i],
+			{
+				types: ['geocode'],
+				fields: ['address_components', 'geometry.location']
+			}
+		);
+		autoComplete.addListener('place_changed', function(){
+			var place = this.getPlace();
+
+			for (var i = 0; i < place.address_components.length; i++) {
+				var addressType = place.address_components[i].types[0];
+				if (componentForm[addressType]) {
+					var val = place.address_components[i][componentForm[addressType]];
+					currentAddress[addressType] = val;
+				}
+			}
+
+			saveAddressCookie(this);
+			document.location.href = "/signup";
+		});
+	}
+
+    $( ".address-box a" ).click(function(){
+    	var boxId = $(this).attr('box-id');
+    	var input = $(".address-box input[box-id="+boxId+"]");
+    	var street = input.val();
+
+		$(".address-box").LoadingOverlay("show"); 
+    	
+    	$.ajax({
+    		url: 'https://geocoder.api.here.com/6.2/geocode.json',
+    		type: 'GET',
+    		dataType: 'json',
+    		data: {
+    			searchtext: street,
+    			app_id: 'LZvyaUxCeDMIa80OH3aF',
+    			app_code: 'Ryu8jwIFYTPnCnLqukU0jA',
+    		},
+    		success: function(response) {
+    			console.log(response.Response.View[0].Result.length)
+				if(response.Response.View[0].Result.length > 0){
+					$(".address-box").LoadingOverlay("hide"); 
+					var location = response.Response.View[0].Result[0].Location;
+					var address = location.Address;
+
+					let addressObject = {
+						street_number: address.HouseNumber || "",
+						street: address.Street || "",
+						city: address.City || "",
+						state: address.State || "",
+						zipcode: address.PostalCode || "",
+						latitude: location.DisplayPosition.Latitude,
+						longitude: location.DisplayPosition.Longitude
+					};
+
+					console.log(addressObject)
+					document.cookie = "address=" + JSON.stringify(addressObject) + "; path=/; secure";
+					document.location.href = "/signup";
+				}else{
+					$(".address-box").LoadingOverlay("hide"); 
+					//show error message
+				}
+    		},
+    		fail: function(response) {
+				$(".address-box").LoadingOverlay("hide"); 
+				//show error message
+    		},
+    	})
+	}); 
+
+	if(secondaryMapCall){
+		secondaryMapCall();
+	}
+}
+
+$(document).ready(function(){
+	let addressCookie = readCookie("address");
+	if(addressCookie) {
+		let addressParts = JSON.parse(addressCookie);
+
+		var formattedAddress = addressParts.street_number + " " + addressParts.street + " " + addressParts.city + ", " + addressParts.state + " " + addressParts.zipcode;
+		$( ".address-box input" ).val(formattedAddress);
+	}
+})

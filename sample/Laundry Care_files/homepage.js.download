@@ -1,0 +1,363 @@
+
+function openMenu(){
+	if($(".mobile-menu").css("display") == "block"){
+		//closing
+		$(".fa-times").removeClass("fa-times").addClass("fa-bars");
+		$("body").removeClass("noscroll");
+		$(".mobile-menu").css("display", "none");
+	}else{
+		//opening
+		$(".fa-bars").removeClass("fa-bars").addClass("fa-times");
+		$("body").addClass("noscroll");
+		$(".mobile-menu").css("display", "block");
+	}
+}
+
+function secondaryMapCall(){
+}
+
+function onStarClick(e){
+    e.preventDefault();
+    var selected = $(this).attr("star-num");
+    var key = $(this).attr("star-key");
+	$(".rating-star[star-key="+key+"]").removeClass("active")
+	$(".rating-star[star-key="+key+"]").removeClass("fa-star")
+	$(".rating-star[star-key="+key+"]").removeClass("fa-star-o")
+	$(".rating-star[star-key="+key+"]").addClass("fa-star-o")
+
+    for (var i = 0; i <= selected; i++) {
+    	$(".rating-star[star-num="+i+"][star-key="+key+"]").addClass('active')
+		$(".rating-star[star-num="+i+"][star-key="+key+"]").removeClass("fa-star-o")
+		$(".rating-star[star-num="+i+"][star-key="+key+"]").addClass("fa-star")
+    }
+}
+
+function onRatingClick(e){
+    e.preventDefault();
+	$(".tip-option").removeClass("active");
+	$(this).addClass("active");
+}
+
+function submitTip(amount){
+    apiRequest({
+        endpoint: "states/list",
+        data: {
+            site_id: "2"
+        }
+    })
+    .then(states => {
+        $.LoadingOverlay("hide");
+        states.forEach(state => {
+            $("#address-state-field").append("<option value='"+state.id+"' abbreviation='"+state.abbreviation+"'>"+state.name+"</option>");
+        })
+    })
+    .catch(err => {
+        $.LoadingOverlay("hide");
+    });
+}
+
+function showTipPopup(){
+    let wrapper = document.createElement("div");
+    
+    let headerWrapper = document.createElement("div");
+        headerWrapper.classList.add("header-wrapper");
+        headerWrapper.style.paddingBottom = "25px";
+
+    let header = document.createElement("p");
+        header.innerHTML = "Add a tip for Brian Gorham";
+        header.classList.add("swal-title");
+        header.style.paddingTop = "0";
+
+    headerWrapper.appendChild(header);
+    wrapper.appendChild(headerWrapper);
+
+    var tipAmounts = [
+    	{
+    		amount: "1",
+    		text: "$1",
+    	},
+    	{
+    		amount: "2",
+    		text: "$2",
+    	},
+    	{
+    		amount: "5",
+    		text: "$5",
+    	},
+    ];
+
+    let bodyContainer = document.createElement("div");
+        bodyContainer.classList.add("service-container");
+        bodyContainer.id = "serviceContainer";
+
+    let tipOptionContainer = document.createElement("div");
+	tipOptionContainer.style.textAlign = "left";
+	tipOptionContainer.style.fontWeight = "bold";
+	tipOptionContainer.style.display = "flex";
+
+    tipAmounts.forEach(option => {
+	    let tipOptionSubcontainer = document.createElement("div");
+		tipOptionSubcontainer.style.flex = "1";
+
+	    let tipOption = document.createElement("div");
+	    tipOption.innerHTML = option.text;
+    	tipOption.classList.add("tip-option");
+		tipOption.setAttribute('amount', option.amount);
+    	tipOptionSubcontainer.appendChild(tipOption);
+    	tipOption.onclick = onRatingClick;
+
+    	tipOptionContainer.appendChild(tipOptionSubcontainer);
+    })
+
+    bodyContainer.appendChild(tipOptionContainer);
+
+    let tipOptionContainer2 = document.createElement("div");
+	tipOptionContainer2.style.marginTop = "20px";
+	tipOptionContainer2.style.marginBottom = "50px";
+
+    let tipOption = document.createElement("div");
+    tipOption.innerHTML = "Enter Custom Amount";
+	tipOption.classList.add("tip-option");
+	tipOption.classList.add("wide-tip-option");
+	tipOption.setAttribute('amount', "custom");
+    tipOption.onclick = onRatingClick;
+	tipOptionContainer2.appendChild(tipOption);
+
+    bodyContainer.appendChild(tipOptionContainer2);
+    wrapper.appendChild(bodyContainer);
+
+    let buttonWrapper = document.createElement("div");
+        buttonWrapper.style.display = "flex";
+        buttonWrapper.style.marginTop = "4px";
+
+    let submitButton = document.createElement("a");
+        submitButton.classList.add("button1");
+        submitButton.classList.add("heavy-rounded");
+        submitButton.innerHTML = "Done";
+        submitButton.style.flex = "1";
+
+    buttonWrapper.appendChild(submitButton);
+    wrapper.appendChild(buttonWrapper);
+
+    submitButton.onclick = (e) => {
+        e.preventDefault();
+
+        var amount = $( ".tip-option.active" ).attr("amount");
+
+        if(amount == "custom"){
+        }
+
+        swal.close();
+        submitTip(amount)
+        return;
+    };
+
+    swal({
+        className: "service-sweet-alert",
+        content: wrapper,
+        buttons: false
+    });
+}
+
+function showRatingPopup() {
+    let wrapper = document.createElement("div");
+    
+    let headerWrapper = document.createElement("div");
+        headerWrapper.classList.add("header-wrapper");
+        headerWrapper.style.paddingBottom = "25px";
+
+    let header = document.createElement("p");
+        header.innerHTML = "How was your recent order?";
+        header.classList.add("swal-title");
+        header.style.paddingTop = "0";
+
+    headerWrapper.appendChild(header);
+    wrapper.appendChild(headerWrapper);
+
+    var questions = [
+    	{
+    		key: "company-rating",
+    		question: "Rate Laundry Care (Client Support, Website, Pricing)",
+    		type: "star",
+    	},
+    	{
+    		key: "provider-rating",
+    		question: "Rate Your Provider (Service, Timeliness, Quality)",
+    		type: "star",
+    	},
+    	{
+    		key: "comments",
+    		question: "Additional Comments",
+    		type: "text",
+    	},
+    ];
+
+    let bodyContainer = document.createElement("div");
+        bodyContainer.classList.add("service-container");
+        bodyContainer.id = "serviceContainer";
+
+    questions.forEach(question => {
+	    let questionContainer = document.createElement("div");
+    	questionContainer.style.textAlign = "left";
+    	questionContainer.style.fontWeight = "bold";
+
+	    let label = document.createElement("label");
+	    label.innerHTML = question.question;
+    	questionContainer.appendChild(label);
+
+	    if(question.type == "star"){
+		    let starContainer = document.createElement("div");
+		    starContainer.classList.add("rating-star-container")
+	    	starContainer.style.display = "flex";
+
+	    	for (var i=0; i < 5; i++) {
+	    		let starDiv = document.createElement("div");
+	    		starDiv.style.textAlign = "center";
+
+		    	let star = document.createElement("span");
+		    	star.classList.add("fa")
+		    	star.classList.add("fa-star-o")
+		    	star.classList.add("rating-star")
+				star.setAttribute('star-num', i+1);
+				star.setAttribute('star-key', question.key);
+    			star.onclick = onStarClick
+    			starDiv.appendChild(star);
+
+    			starContainer.appendChild(starDiv);
+	    	}
+    		
+    		questionContainer.appendChild(starContainer);
+	    } 
+
+	    if(question.type == "text"){
+		    var descriptionInput = document.createElement("textarea");
+		    descriptionInput.classList.add("form-control")
+		    descriptionInput.placeholder = "tell us what you think..."
+		    descriptionInput.style.maxWidth = "none"
+		    descriptionInput.style.resize = "vertical"
+		    descriptionInput.style.minHeight = "150px"
+		    descriptionInput.style.marginBottom = "25px"
+			descriptionInput.setAttribute('text-key', question.key);
+    		
+    		questionContainer.appendChild(descriptionInput);
+		}
+
+    	bodyContainer.appendChild(questionContainer);
+    })
+
+    wrapper.appendChild(bodyContainer);
+
+    let label = document.createElement("label");
+    label.innerHTML = "Would you like to add a tip for your provider?";
+    wrapper.appendChild(label);
+
+    let buttonWrapper = document.createElement("div");
+        buttonWrapper.style.display = "flex";
+        buttonWrapper.style.marginTop = "4px";
+
+    let noTipButton = document.createElement("a");
+        noTipButton.classList.add("button1");
+        noTipButton.classList.add("heavy-rounded");
+        noTipButton.innerHTML = "No";
+        noTipButton.style.background = "white";
+        noTipButton.style.color = "#e951a7";
+        noTipButton.style.flex = "1";
+        noTipButton.style.border = "2px solid #e951a7"
+        noTipButton.style.maxWidth = "30%";
+
+    let yesTipButton = document.createElement("a");
+        yesTipButton.classList.add("button1");
+        yesTipButton.classList.add("heavy-rounded");
+        yesTipButton.innerHTML = "Yes";
+        yesTipButton.style.flex = "1";
+
+    buttonWrapper.appendChild(noTipButton);
+    buttonWrapper.appendChild(yesTipButton);
+    wrapper.appendChild(buttonWrapper);
+
+    var submitReview = (companyRating, providerRating, textReview, continueToTip) => {
+	    $.LoadingOverlay("show");
+	    
+	    apiRequest({
+	        endpoint: "orders/review",
+	        data: {
+	            // order_id: 1000,
+	            company_rating: companyRating,
+	            provider_rating: providerRating,
+	            comment: textReview,
+	        }
+	    })
+	    .then(result => {
+	        $.LoadingOverlay("hide");
+	        
+			if(continueToTip)
+				showTipPopup()
+	    })
+	    .catch(err => {
+	        $.LoadingOverlay("hide");
+    		swal("Error", "There was an error submitting your review. Please try again.", "error").then(showSwal)
+	    });
+	}
+
+    noTipButton.onclick = (e) => {
+        e.preventDefault();
+
+        var companyRating = $( ".rating-star.active[star-key=company-rating]" ).length;
+        var providerRating = $( ".rating-star.active[star-key=provider-rating]" ).length;
+        var textReview = $("textarea[text-key=comments]").val();
+
+        swal.close();
+        submitReview(companyRating, providerRating, textReview, false)
+        return;
+    };
+
+    yesTipButton.onclick = (e) => {
+        e.preventDefault();
+
+        var companyRating = $( ".rating-star.active[star-key=company-rating]" ).length;
+        var providerRating = $( ".rating-star.active[star-key=provider-rating]" ).length;
+        var textReview = $("textarea[text-key=comments]").val();
+
+        swal.close();
+        submitReview(companyRating, providerRating, textReview, true)
+        return;
+    };
+
+    var showSwal = () => {
+	    swal({
+	        className: "service-sweet-alert",
+	        content: wrapper,
+	        buttons: false
+	    });
+    }
+
+    showSwal()
+}
+
+$(document).ready(function(){
+    $( ".mobile-menu-btn" ).click(openMenu);
+
+    if("Locations" == "Location"){
+    	$(".view-location-btn").text("View Location")
+    }
+
+    var typed = new Typed('.typed', {
+		strings: ["Less Stress!","More Family Time!","More Fun!","More Relaxing!","More Free Time!" ],
+		typeSpeed: 100,
+		startDelay: 2000,
+		backDelay: 2000,
+		backSpeed: 90,
+		smartBackspace: true,
+		shuffle: false,
+		loop: true,
+		loopCount: Infinity,
+		showCursor: true,
+	});
+
+	if(!true){
+		$("#bottom-cta").hide()
+		$(".address-box").hide()
+	}
+  
+	// showRatingPopup()
+});

@@ -1,0 +1,552 @@
+function $_GET(param) {
+  var vars = {};
+  window.location.href.replace( location.hash, '' ).replace( 
+    /[?&]+([^=&]+)=?([^&]*)?/gi, // regexp
+    function( m, key, value ) { // callback
+      vars[key] = value !== undefined ? value : '';
+    }
+  );
+
+  if ( param ) {
+    return vars[param] ? vars[param] : "";  
+  }
+  return vars;
+}
+
+// function saveUser(id){
+//   debugger;
+//   $.jStorage.set("id", id);
+//   //
+// }
+
+// function clear(){
+//   debugger;
+//   $.jStorage.flush();
+//   //
+// }
+
+// function autoLoginCallback( data ) { 
+//     var user = data
+//     var count = Object.keys(user).length;
+
+//     console.log("Response: ");
+//     console.log(data);
+
+//     if(count == 1 ){
+//         window.location.replace("/index.html")
+//     }
+// }
+
+// function autoLogin( ) { 
+//   var user = getUser();
+
+//   if(user){
+//     var data = { email: user.email, password: user.password };
+
+//     $.ajax({
+//         type: "POST",
+//         url: "../php/processLogin.php",
+//         data: data,
+//         success: autoLoginCallback,
+//         dataType: "json"
+//     });
+//   }
+// }
+
+function loginNewClient(id){
+
+}
+function login( user ) { 
+    var count = Object.keys(user).length;
+
+    if( count == 1 ){
+      user = user[0]
+      saveUser(parseInt(user.id)*427);
+      window.location.replace("../dashboard")
+    }
+    else{
+        $('#alert-login').css("css","block").fadeIn();
+        setTimeout( "$('#alert-login').fadeOut(1500);",3000 );
+    }
+}
+
+function loginUser(email, password) {
+  return new Promise((resolve, reject) => {
+      apiRequest({
+          data: {
+              email: email,
+              password: password,
+              source: "CLIENT_SITE",
+              site_id: 2
+          },
+          endpoint: "users/login"
+      })
+      .then(response => {
+          let user = response.user;
+          let tokens = response.tokens;
+
+          let isCorrectSite = false;
+          tokens.forEach(token => {
+            if (token.site_id == '2')
+              isCorrectSite = token;
+          });
+
+          if (!isCorrectSite) {
+            return reject({
+              user_message: "Invalid email or password. Login unsuccessful."
+            });
+          }
+
+          console.log("User", user);
+          console.log("Token", isCorrectSite);
+
+          // Store user object
+          $.jStorage.set("user", user);
+
+          // Set fetched tokens
+          let expirationDate = new Date();
+          expirationDate.setTime(expirationDate.getTime() + (90*86400*1000));
+          document.cookie = "token=" + JSON.stringify(isCorrectSite) + "; expires=" + expirationDate.toUTCString() + "; secure; path=/;";
+
+          resolve(user);
+      })
+      .catch(error => {
+          reject(error);
+      })
+  }) 
+}
+
+function formatAMPM(date) {
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var ampm = hours >= 12 ? 'pm' : 'am';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  minutes = minutes < 10 ? '0'+minutes : minutes;
+  var endHours = hours + 1 
+
+  if(endHours == 12){
+    endHours = "am - 12pm"
+  }
+  else if(endHours == 13){
+    endHours = " - " + 1 +  ampm
+  }
+  else{
+    endHours = " - " + endHours +  ampm
+  }
+
+  var weekday = new Array(7);
+  weekday[0] =  "Sunday";
+  weekday[1] = "Monday";
+  weekday[2] = "Tuesday";
+  weekday[3] = "Wednesday";
+  weekday[4] = "Thursday";
+  weekday[5] = "Friday";
+  weekday[6] = "Saturday";
+
+  var n = weekday[date.getDay()];
+  var currentTime = new Date;    
+  var prefix = "";
+  var today = new Date;
+  var tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+  if(date.setHours(0,0,0,0) == (new Date).setHours(0,0,0,0)) {
+    prefix = "Today, "
+  } else if (tomorrow.getFullYear() == date.getFullYear() && date.getMonth() == tomorrow.getMonth() && tomorrow.getDate() == date.getDate()) {
+    prefix = "Tomorrow, "
+  } else if( currentTime < date ){
+    prefix = n + ", " ;
+  } 
+  else{
+    prefix = (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + ", ";
+  }
+
+  var strTime = prefix + hours  + endHours;
+  return strTime;
+}
+
+function getTimes( locationId, callback ){
+  $.ajax({
+      type: "POST",
+      url: "https://www.taplaundry.com/api/v1/times/list",
+      data: {
+        location_id: locationId,
+        site_id: 2,
+      },
+      success: function( result ) {
+        if(result.status == "ok"){
+          var currentTime = new Date;    
+          var currentTimeUnix = Math.round(currentTime.getTime()/1000);    
+          var finalPickupTimes = [];
+          var finalDeliveryTimes = [];
+
+          console.log(result.result)
+
+          result.result.pick_up_times.forEach(time => {
+            var thisDate = new Date(time*1000);
+            var unix = thisDate.getTime();
+
+            if(currentTimeUnix < (time - (3600*4))){
+              var thisTime = {
+                string: formatAMPM(thisDate),
+                date: thisDate,
+                unix: unix / 1000
+              };
+              finalPickupTimes.push(thisTime);
+            }
+          })
+
+          result.result.delivery_times.forEach(time => {
+            var thisDate = new Date(time*1000);
+            var unix = thisDate.getTime();
+
+            if(currentTimeUnix < (time - (3600*4))){
+              var thisTime = {
+                string: formatAMPM(thisDate),
+                date: thisDate,
+                unix: unix / 1000
+              };
+              finalDeliveryTimes.push(thisTime);
+            }
+          })
+
+          return callback(finalPickupTimes, finalDeliveryTimes, result.result.minimum_turnaround);
+        }else{
+          return callback([]);
+        }
+    },
+      dataType: "json"
+  });
+}
+
+function getUserBasic(url, callback) { 
+    var id = $.jStorage.get("id");
+  
+    if(!id){
+      return {};
+    } 
+
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: { id: id },
+        success: function(data){
+            var user = data;
+            var count = Object.keys(user).length;
+
+            if(count == 0 ){
+              return {};
+            }else{
+              callback(data[0]);
+            }
+        },
+        dataType: "json"
+    });
+}
+
+function getUser(callback) {
+    if(!getToken()){
+      var id = $.jStorage.get("id");
+      $.jStorage.flush();
+
+      if(!id){
+          return window.location.replace("../login")
+      } 
+
+      // This series of ajax calls will attempt to automatically authenticate a new
+      // user session based on a user's previous session.
+      $.ajax({
+          type: "POST",
+          url: "../php/processLogin.php",
+          data: { id: id },
+          success: function(data){
+              var user = data;
+              var count = Object.keys(user).length;
+
+              if(count != 1 ){
+                  window.location.replace("../login")
+              }else{
+                loginUser(data[0].Email, data[0].Password)
+                .then(() => {
+                  location.reload();
+                })
+                .catch(err => {
+                  location.reload();
+                })
+              }
+          },
+          error: () => {
+            $.ajax({
+                type: "POST",
+                url: "php/processLogin.php",
+                data: { id: id },
+                success: function(data){
+                    var user = data;
+                    var count = Object.keys(user).length;
+      
+                    if(count != 1 ){
+                        window.location.replace("../login")
+                    }else{
+                      loginUser(data[0].Email, data[0].Password)
+                      .then(() => {
+                        location.reload();
+                      })
+                      .catch(err => {
+                        location.reload();
+                      })
+                    }
+                },
+                dataType: "json"
+            });
+          },
+          dataType: "json"
+      });
+
+      return;
+    } 
+
+    let user;
+    apiRequest({
+      endpoint: "users/me"
+    })
+    .then(result => {
+      user = result;
+      $.jStorage.set('user', user);
+
+      return apiRequest({
+        endpoint: "orders/bycustomer",
+        data: {
+          customer_id: user.id
+        }
+      })
+    })
+    .then(orders => {
+      user.orders = orders;
+      callback(user);
+    });
+
+    // $.ajax({
+    //     type: "POST",
+    //     url: "../php/processLogin.php",
+    //     data: { id: id },
+    //     success: function(data){
+    //         var user = data;
+    //         var count = Object.keys(user).length;
+
+    //         if(count != 1 ){
+    //             window.location.replace("../login")
+    //         }else{
+    //           data[0].Address = JSON.parse(data[0].Address)
+    //           data[0].Count = parseInt(data[0].Count)
+    //           callback(data[0]);
+    //         }
+    //     },
+    //     dataType: "json"
+    // });
+}
+
+if(true){
+  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+  (function(){
+  var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+  s1.async=true;
+  s1.src='https://embed.tawk.to/59c2ede74854b82732ff1359/default';
+  s1.charset='UTF-8';
+  s1.setAttribute('crossorigin','*');
+  s0.parentNode.insertBefore(s1,s0);
+  })();  
+}
+
+function sendLink() {
+  $.LoadingOverlay("show"); 
+  var phone = $("#phone-number").val().replace(/\D/g,'');
+  var message = "Download the Laundry Care mobile app - iOS: https://apple.co/2MdbGiN Android: https://bit.ly/2SFg1fT";
+  
+  if(phone.length != 10){
+    $.LoadingOverlay("hide"); 
+    swal("Hmmm...", "There was a problem sending the download link. Please make sure you have entered a 10 digit phone number.", "error")
+    $("#text-error").css("display", "block")
+  }else{
+    $("#text-error").css("display", "none")
+
+    $.ajax({
+      type: "POST",
+      url: "https://www.taplaundry.com/api/text/sendText.php",
+      data: { phone: phone, body: message },
+      dataType: "text",
+      success: function(response){
+        $.LoadingOverlay("hide"); 
+        $("#phone-number").val("");
+        swal("Message Sent", "Check your phone! We sent you a message containing the link to download our iOS and Android app.", "success")
+      }
+    });
+  }
+}
+
+function getToken() {
+  let token = getCookie("token");
+
+  if (token)
+    return JSON.parse(token)
+  else
+    return null;
+}
+
+function apiRequest(options) {
+  return new Promise((resolve, reject) => {
+      if (!options)
+          return reject("Missing required options set.");
+      if (!options.endpoint)
+          return reject("Missing required option: endpoint");
+      
+      let data = {
+      };
+
+      if (options.data)
+          Object.keys(options.data).forEach(key => {
+              data[key] = options.data[key]
+          });
+
+      $.ajax({
+          method: options.method ? options.method : "POST",
+          url: "https://taplaundry.com/api/v1/" + options.endpoint,
+          data: data,
+          beforeSend: (request) => {
+              if (getToken()) {
+                  request.setRequestHeader("Authorization", "Bearer " + getToken().token)
+              }
+          }
+      })
+      .then((data, textStatus, jqXHR) => {
+          console.log("DATA", data);
+          console.log("TEXT_STATUS", textStatus);
+          console.log("JQXHR", jqXHR);
+
+          if (jqXHR.status == 200 && data && data.status == "ok") {
+              resolve(data.result);
+          }else {
+              if (data) {
+                  try { data = JSON.parse(data); } catch (e) {}
+                  
+                  if (data.error == "UNAUTHENTICATED") {
+                      // Invalidate Stored User Data and Redirect to Login
+                      $.jStorage.flush();
+                      document.cookie = "token=;expires=Thu, 01 Jan 1970 00:00:01 GMT;"
+                      location.href = "/login";
+                  }
+
+                  let user_message = "";
+                  if (data.user_message) user_message = data.user_message;
+                  else if (data.message) user_message = data.message;
+                  else user_message = textStatus;
+
+                  reject({
+                      status: jqXHR.status,
+                      error: data.error ? data.error : null,
+                      message: data.message ? data.message : textStatus,
+                      user_message
+                  });
+              }else {
+                  reject({
+                      status: jqXHR.status,
+                      error: null,
+                      message: "An unexpected error occurred.",
+                      user_message: "An unexpected error occurred."
+                  });
+              }
+          }
+              
+      })
+      .catch(err => {
+          console.log(err);
+          reject({
+              status: jqXHR.status,
+              error: null,
+              message: "An unexpected error occurred.",
+              user_message: "An unexpected error occurred."
+          });
+      })
+  });
+}
+
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+      }
+  }
+  return "";
+}
+
+
+$(document).ready(function(){
+  wow = new WOW(
+    {
+      boxClass:     'wow',   
+      animateClass: 'animated',
+      offset:       0,        
+      mobile:       true     
+    }
+  );
+  wow.init();
+
+  var banner = `*  *  *   Make Laundry Day Easier. . .Download the Laundry Care Mobile App Today!   *  *  *`;
+  if(banner.length>1){
+    $("#top-banner").fadeIn();
+  }
+
+  $( "#send-link" ).click(sendLink); 
+
+  var textString = "Download the Laundry Care mobile app - iOS: https://apple.co/2MdbGiN Android: https://bit.ly/2SFg1fT";
+
+  let token = getToken();
+  if (token) {
+    if (token.site_id == '2') {
+      let user = $.jStorage.get("user");
+      
+      if(user){
+        $("#welcome-message").text("Welcome back, " + user.first_name + " " + user.last_name).css("padding-left", "30px");
+        $(".non-client").css("display", "none");
+        $(".client").css("display", "block");	    	
+      } 
+    }else {
+      console.log("Flusing Storage and Cookie");
+      $.jStorage.flush();
+      document.cookie = "token=;expires=Thu, 01 Jan 1970 00:00:01 GMT;"
+    }
+  }
+
+  // If the user has a previous login session, authenticate them by fetching the user automatically.
+  if (!token  && $.jStorage.get('id'))
+    getUser();
+
+  if(textString.length <= 1){
+    $("#download-mobile-app-section").css("display","none");
+    $("#download-mobile-app-row").css("display","none");
+  }
+
+  $(".faq").click(function(){
+    if($(".faq-answer[question="+$(this).attr("question")+"]").css("display") == "none"){
+      $(".faq-answer[question="+$(this).attr("question")+"]").css("display","block");
+      $(".fa-expand[question="+$(this).attr("question")+"]").css("display","none");
+      $(".fa-compress[question="+$(this).attr("question")+"]").css("display","block");
+    }else{
+      $(".faq-answer[question="+$(this).attr("question")+"]").css("display","none");
+      $(".fa-expand[question="+$(this).attr("question")+"]").css("display","block");
+      $(".fa-compress[question="+$(this).attr("question")+"]").css("display","none");
+    }
+  });
+
+  $('#logout').click(function(){
+    $.jStorage.flush();
+    document.cookie = "token=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/"
+    window.location.replace("../login")
+  });
+});

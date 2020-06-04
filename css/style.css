@@ -1,0 +1,289 @@
+*{
+   
+}
+
+
+body{
+    padding: 0%;
+    margin: 0%;
+    box-sizing: border-box;
+    background-color: whitesmoke;
+}
+header{
+    background-color: rgba(12, 151, 231, 0.616);
+    color: white;
+    font-size: 20px;
+    padding: 3px;
+    padding-bottom: 8px;
+    text-align: center;
+    background-attachment: fixed;
+}
+header sup{
+    font-size: 20px;
+}
+.section{
+    background-image: url(./images/ladies.jpg);
+    height: 100px;
+    background-repeat: no-repeat;
+    color: white;
+    background-size: cover;
+    background-attachment: fixed;
+}
+.section i{
+    float: right;
+    margin-top: ;
+}
+.img{
+    text-align: center;
+    padding: 20px;
+    float: left;
+    margin-top: 10px;
+}
+.img span{
+    font-size: 30px;
+    padding: 10px;
+}
+.home-menu ul{
+    list-style-type: none;
+}
+.home-menu ul li{
+    display: inline;
+    
+}
+.home-menu{
+    float: right;
+    margin-right: ;
+    margin-top: 10px;
+    word-spacing: 20px;
+}
+a{
+    text-decoration: none;
+}
+a:hover{
+    color: white;
+    text-decoration: underline;
+}
+a:active{
+    color: gray;
+    text-decoration: underline;
+}
+a:visited{
+    color: red;
+}
+.flex{
+    background: whitesmoke;
+}
+.flex ul{
+    display: flex;
+    justify-content: center;
+    padding: ;
+    word-spacing: 0px;
+    margin: 50px;
+
+}
+.flex-content{
+    background: whitesmoke;
+}
+.flex ul .flex-item{
+    margin: 95px;
+}
+.flex-content ul{
+    display: flex;
+    justify-content: center;
+    padding: ;
+    word-spacing: 0px;
+    margin: 50px;
+}
+.flex-content ul .menu{
+    margin: 95px;
+    margin-top: 5px;
+}
+.content-item{
+    background-color: white;
+}
+.content-item ul{
+    display: flex;
+    margin: 50PX;
+    justify-content: center;
+}
+.content-item ul .menu{
+    margin: 80px;
+}
+.work-description{
+    ackground-color: white;
+}
+.work-description ul{
+    display: flex;
+    justify-content: center;
+    margin: 50px;
+}
+.wash-content{
+    background: white;
+}
+.wash-content ul{
+     display: flex;
+    justify-content: center;
+    margin: 50px;
+
+}
+.special-care{
+    background-color: rgb(34, 94, 224);
+    margin-top: 0%;
+}
+.special-care ul{
+    display: flex;
+    justify-content: center;
+    margin: 50px;
+
+}
+.nation-service{
+    background: whitesmoke;
+}
+.nation-service ul{
+    display: flex;
+    justify-content: center;
+    margin: 50px;
+}
+.frequent{
+    background: rgb(34, 94, 224);
+}
+.frequent ul{
+    display: flex;
+    justify-content: center;
+    margin: 50px;
+}
+.get-item ul{
+    display: flex;
+    justify-content: center;
+    margin: 50px;
+}
+.footer-item{
+    background: rgb(2, 2, 71);
+    padding-bottom: 215px;
+}
+.footer-item .footer-children{
+    display: flex;
+    justify-content: center;
+    margin: 50px;
+    padding-top: 50;
+}
+.footer-item .sub-foot{
+    display: flex;
+    justify-content: center;
+    margin: 50px;
+    margin-bottom: 50px;
+}
+/*index ends yffasyfgdigshfohsojfjsdjgkfojgioyhFTUYeiohjgftyb0  u2bcubt34yruwiohdfosakjcgfJ'jatyoiJIOiyeyf/*
+
+/*commercial begins yffasyfgdigshfohsojfjsdjgkfojgioyhFTUYeiohjgftyb0  u2bcubt34yruwiohdfosakjcgfJ'jatyoiJIOiyeyf*/
+
+
+.form{
+    display: flex;
+    justify-content: center;
+    margin: 0px;
+    margin-bottom: 50px;
+    background: white;
+
+}
+.businesses{
+    display: flex;
+    justify-content: center;
+    margin: 0px;
+    margin-bottom: 50px;
+    margin-top: 0px;
+    background: rgb(224, 5, 170);
+    color: white;
+    font-size: 20px;
+}
+.businesses ul li{
+    list-style-type: none;
+}
+/* location begins usgidhoijdfjgiohsdohfjshagISHFKJSDLKFK   IUQRUIMF01=-RIU32KERHSDXZGAHLMDKNBEJNCUIOEKQWV;',V*/
+
+.section{
+    background-image: url(./images/ladies.jpg);
+    height: 1000px;
+    background-repeat: no-repeat;
+    color: white;
+    background-size: cover;
+    background-attachment: fixed;
+}
+/*pricing brginsbiasduihasiohfiposjaopjasidhaiojfjasgidhioii98wri-=woeqiu   heiuqwhdujdaduasgdiqopoq    poqjwjb*/
+.body{
+    background: rgb(127, 186, 253);
+   
+}
+.body .body-person{
+    display: flex;
+    justify-content: center;
+    margin: 50px;
+}
+.body .body-children{
+    display: flex;
+    justify-content: center;
+    margin: 50px;
+}
+.body .body-children a{
+    text-decoration: none;
+}
+/*Frequent asked questions hjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj*/
+.body .frequent-item ul{
+   display: flex;
+    justify-content: center;
+    margin: 50px; 
+}
+.trance{
+    background: url(./images/sky2.jpg);
+     height: 900px;
+    background-repeat: no-repeat;
+    color: white;
+    background-size: cover;
+    background-attachment: fixed;
+
+}
+.trance i{
+    float: right;
+    margin-top: ;
+}
+/*loginyuqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg*/
+.footer-item i{
+    float: right;
+    margin-top: ;
+}
+.footer-item .sub-footer{
+     display: flex;
+    justify-content: center;
+    margin: 50px;
+    margin-bottom: 2px;
+}
+.footer-item .sub-footer .a a:hover{
+    color: white;
+    text-decoration: underline;
+}
+.footer-item .sub-footers{
+    display: flex;
+    justify-content: center
+}
+.footer-item .sub-footers a:hover{
+    color: white;
+    text-decoration: underline;
+}
+
+/*signupyuqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg*/
+.footer-items{
+    background: rgb(2, 2, 71);
+    padding-bottom: 477px;
+}
+.footer-items .sub-footers{
+     display: flex;
+    justify-content: center;
+    margin: 50px;
+    margin-bottom: 2px;
+}
+.footer-items .footer-children{
+    display: flex;
+    justify-content: center;
+    margin: 50px;
+    padding-top: 50;
+}
